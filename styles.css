@@ -1,0 +1,127 @@
+/* =========================================================================
+   Mobile-first CSS.
+
+   "Mobile-first" means the plain, unconditional rules describe the PHONE
+   layout, and we only add a media query to *widen* things on bigger screens.
+   Doing it the other way round means fighting desktop assumptions on every
+   small screen. Start narrow, grow outward.
+
+   TODO: if this grows past ~200 lines, split into base / components / screens,
+   or adopt a small utility framework. Not yet — a framework here would be
+   more code than the app.
+   ========================================================================= */
+
+/* ---- Design tokens -----------------------------------------------------
+   Naming your colours once means changing the theme is a 5-line edit, and
+   it is the same idea CSS frameworks formalise. Cheap habit, big payoff. */
+:root {
+  --bg:      #f7f7f8;
+  --surface: #ffffff;
+  --text:    #1a1a1a;
+  --muted:   #666c75;
+  --border:  #d8dbe0;
+  --accent:  #0057b8;   /* blue from the Swedish flag */
+  --correct: #1a7f45;
+  --wrong:   #b3261e;
+  --radius:  10px;
+}
+
+/* box-sizing: border-box makes width mean "the whole box, padding included",
+   which is what you intuitively expect. The default (content-box) does not. */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  /* System font stack = native look on every OS, zero download, no layout
+     shift while a webfont loads. Free performance. */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               Helvetica, Arial, sans-serif;
+  font-size: 17px;          /* comfortable to read at arm's length on a phone */
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+}
+
+.app {
+  max-width: 34rem;         /* stops lines getting unreadably long on desktop */
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+h1 { font-size: 1.6rem; margin: 0 0 .5rem; }
+h2 { font-size: 1.25rem; }
+
+.lede   { color: var(--muted); margin-top: 0; }
+.progress { color: var(--muted); font-size: .9rem; margin: 0 0 .25rem; }
+.question { margin: 0 0 1.25rem; line-height: 1.35; }
+
+/* ---- Buttons ---------------------------------------------------------- */
+.btn {
+  display: block;
+  width: 100%;
+  padding: .85rem 1rem;
+  font: inherit;             /* buttons do NOT inherit fonts by default */
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  /* ~48px tall: the minimum comfortable tap target on a touch screen.
+     This is the single most common mobile usability failure. */
+  min-height: 48px;
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  text-align: center;
+  font-weight: 600;
+  margin-top: 1.25rem;
+}
+
+/* Keyboard users must be able to SEE where they are. Never delete outlines
+   without replacing them. */
+.btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* ---- Answer options --------------------------------------------------- */
+.options { display: flex; flex-direction: column; gap: .6rem; }
+
+.option { /* inherits .btn via the class list in JS */ }
+
+/* :not(:disabled) — once answered, buttons are disabled, and a hover effect
+   on a dead button is a lie about what is clickable. */
+.option:not(:disabled):hover { border-color: var(--accent); }
+
+.option:disabled { cursor: default; opacity: 1; color: var(--text); }
+
+/* Colour alone is not an accessible signal (~8% of men are colour-blind),
+   so the ✓ / ✗ marks added in JS carry the same meaning redundantly. */
+.option.correct { border-color: var(--correct); background: #e8f5ee; }
+.option.wrong   { border-color: var(--wrong);   background: #fdecea; }
+
+/* ---- Feedback & score ------------------------------------------------- */
+.feedback {
+  margin-top: 1rem;
+  padding: .75rem .9rem;
+  border-radius: var(--radius);
+  border-left: 4px solid var(--border);
+  background: var(--surface);
+}
+.feedback.is-correct { border-left-color: var(--correct); }
+.feedback.is-wrong   { border-left-color: var(--wrong); }
+
+.score { font-size: 2rem; font-weight: 700; margin: .5rem 0; }
+
+/* ---- Wider screens ----------------------------------------------------
+   The ONLY media query in the file. Everything above already worked on a
+   phone; this just relaxes the spacing when there is room. */
+@media (min-width: 40rem) {
+  .app { padding: 3rem 1rem; }
+  h1   { font-size: 2rem; }
+  body { font-size: 18px; }
+}
+
+/* TODO: dark mode — add @media (prefers-color-scheme: dark) and override the
+   :root tokens. Because every colour is a token, that is the whole change. */

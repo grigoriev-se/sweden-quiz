@@ -1,0 +1,17 @@
+# Local tooling config (Claude Code's dev-server launcher) — not part of the app
+.claude/
+
+# OS / editor cruft
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
+
+# Python (from `python -m http.server`, and anything we add later)
+__pycache__/
+*.pyc
+.venv/
+
+# Nothing else to ignore yet: no dependencies, no build output.
+# TODO: add `node_modules/` and `dist/` if this ever moves to a Node toolchain.

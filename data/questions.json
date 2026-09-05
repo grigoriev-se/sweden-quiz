@@ -1,0 +1,70 @@
+{
+  "note": "PLACEHOLDER CONTENT. JSON has no comment syntax, so metadata lives in keys like this one. Replace these with real medborgarskapsprov material later.",
+  "version": 1,
+  "questions": [
+    {
+      "id": "q1",
+      "category": "samhalle",
+      "question": "Vilket år blev Sverige medlem i Europeiska unionen (EU)?",
+      "options": ["1975", "1985", "1995", "2005"],
+      "correctIndex": 2,
+      "explanation": "Sverige gick med i EU den 1 januari 1995, efter en folkomröstning 1994."
+    },
+    {
+      "id": "q2",
+      "category": "samhalle",
+      "question": "Hur många ledamöter har Sveriges riksdag?",
+      "options": ["249", "301", "349", "401"],
+      "correctIndex": 2,
+      "explanation": "Riksdagen har 349 ledamöter."
+    },
+    {
+      "id": "q3",
+      "category": "kultur",
+      "question": "Vilket datum firas Sveriges nationaldag?",
+      "options": ["1 maj", "6 juni", "24 juni", "13 december"],
+      "correctIndex": 1,
+      "explanation": "Nationaldagen firas den 6 juni och är en allmän helgdag sedan 2005."
+    },
+    {
+      "id": "q4",
+      "category": "samhalle",
+      "question": "Vem är Sveriges statschef?",
+      "options": ["Statsministern", "Kungen", "Riksdagens talman", "Justitiekanslern"],
+      "correctIndex": 1,
+      "explanation": "Sverige är en monarki: kungen är statschef, men har en ceremoniell roll utan politisk makt."
+    },
+    {
+      "id": "q5",
+      "category": "samhalle",
+      "question": "Hur ofta hålls ordinarie val till riksdagen?",
+      "options": ["Vartannat år", "Vart tredje år", "Vart fjärde år", "Vart femte år"],
+      "correctIndex": 2,
+      "explanation": "Ordinarie riksdagsval hålls vart fjärde år, andra söndagen i september."
+    },
+    {
+      "id": "q6",
+      "category": "geografi",
+      "question": "Vilken är Sveriges största sjö?",
+      "options": ["Vättern", "Mälaren", "Vänern", "Hjälmaren"],
+      "correctIndex": 2,
+      "explanation": "Vänern är Sveriges största sjö och den tredje största i Europa."
+    },
+    {
+      "id": "q7",
+      "category": "samhalle",
+      "question": "Vilken myndighet ansvarar för folkbokföringen i Sverige?",
+      "options": ["Skatteverket", "Migrationsverket", "Försäkringskassan", "Polismyndigheten"],
+      "correctIndex": 0,
+      "explanation": "Skatteverket sköter folkbokföringen, alltså registret över var människor bor."
+    },
+    {
+      "id": "q8",
+      "category": "samhalle",
+      "question": "Vid vilken ålder får man rösta i riksdagsvalet?",
+      "options": ["16 år", "18 år", "20 år", "21 år"],
+      "correctIndex": 1,
+      "explanation": "Rösträtt i riksdagsvalet har svenska medborgare från 18 års ålder."
+    }
+  ]
+}
