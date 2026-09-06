@@ -1,0 +1,6 @@
+# Runtime dependencies — what production installs.
+# Pinned to exact versions so the deployed app is identical to the one you
+# tested. Unpinned deps mean a deploy can break because a library released a
+# new version an hour ago.
+fastapi==0.141.1
+uvicorn[standard]==0.52.4

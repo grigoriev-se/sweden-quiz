@@ -1,42 +1,87 @@
 # Medborgarskapsprovet — practice app (POC)
 
 A walking skeleton for a Swedish citizenship-test practice quiz.
-Plain HTML + CSS + JavaScript. No framework, no build step, no dependencies.
+FastAPI backend, plain HTML/CSS/JavaScript frontend, questions in a JSON file.
+No build step, no database, no framework on the frontend.
+
+See [PLAN.md](PLAN.md) for the architecture and roadmap.
+
+## Setup (once)
+
+```bash
+python -m venv .venv
+```
+
+Then install dependencies:
+
+```bash
+.venv\Scripts\python.exe -m pip install -r requirements.txt -r requirements-dev.txt
+```
 
 ## Run it
 
-From this folder:
-
 ```bash
-python -m http.server 8000
+.venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
-Then open <http://localhost:8000> in a browser. Stop the server with `Ctrl+C`.
+Open <http://localhost:8000>. `Ctrl+C` stops it.
 
-**Do not just double-click `index.html`.** Browsers block `fetch()` on `file://`
-URLs for security, so the questions would never load. Any static server works —
-Python's built-in one just happens to need zero installation.
+`app.main:app` means "the object named `app`, in the module `app/main.py`".
+`--reload` restarts the server whenever a `.py` file changes — handy in
+development, never used in production.
 
-### Check it on your phone
+Editing `data/questions.json` also requires a restart, because the content is
+loaded and validated once at startup. `--reload` does not watch data files, so
+restart by hand after changing questions.
 
-Put both devices on the same Wi-Fi and start the server normally — it already
-listens on every network interface, no extra flags needed.
+Other useful URLs:
 
-Find this machine's local IP (`ipconfig`, look for IPv4 under the Wi-Fi adapter;
-it starts with `192.168.`) and open `http://<that-ip>:8000` on the phone.
-
-Windows Firewall prompts on the first external connection: allow it on **private**
-networks only. If the page never loads, the firewall is the first suspect.
-
-## Files
-
-| File | What it does |
+| URL | What |
 |---|---|
-| `index.html` | Page skeleton. All three screens (start / quiz / result) exist at once; JS shows one. |
-| `styles.css` | Mobile-first styling. Colours are CSS variables at the top. |
-| `app.js` | All logic, in three layers: **state → render → events**. Start reading here. |
+| <http://localhost:8000/api/questions> | The raw JSON the frontend fetches |
+| <http://localhost:8000/api/health> | Liveness check used by the host |
+| <http://localhost:8000/api/docs> | Interactive API docs, generated from the type hints |
+
+## Test it
+
+```bash
+.venv\Scripts\python.exe -m pytest -v
+```
+
+Covers both the API and the *content* — every question is checked for an
+in-range answer, non-empty text and no duplicate options.
+
+## Check it on your phone
+
+Both devices on the same Wi-Fi. Uvicorn only listens on localhost by default,
+so bind it to every interface:
+
+```bash
+.venv\Scripts\python.exe -m uvicorn app.main:app --host 0.0.0.0
+```
+
+Find this machine's local IP (`ipconfig`, IPv4 under the Wi-Fi adapter; starts
+with `192.168.`) and open `http://<that-ip>:8000` on the phone.
+
+Windows Firewall prompts on the first external connection: allow it on
+**private** networks only. If the page never loads, suspect the firewall first.
+
+## Layout
+
+| Path | What it does |
+|---|---|
+| `app/main.py` | FastAPI app: the API routes, and serving the static files. |
+| `app/models.py` | Pydantic models. The contract for what a valid question is. |
 | `data/questions.json` | The questions. Content, deliberately separate from code. |
-| `DEVLOG.md` | Build journal — learnings and time spent. |
+| `static/index.html` | Page skeleton. Three screens exist at once; JS shows one. |
+| `static/styles.css` | Mobile-first styling. Colours are CSS variables at the top. |
+| `static/app.js` | Frontend logic: **state → render → events**. Start reading here. |
+| `tests/test_api.py` | API and content tests. |
+| `PLAN.md` | Architecture, phases, open questions. |
+| `DEVLOG.md` | Build journal. |
+
+Only `static/` is exposed to the web. Everything else — including `.git/` — stays
+private. That is the whole reason the frontend lives in its own folder.
 
 ## Adding questions
 
@@ -53,32 +98,19 @@ Append an object to the `questions` array in `data/questions.json`:
 }
 ```
 
-`correctIndex` is **0-based**: `0` = first option. Nothing in the code assumes
-four options or eight questions — both are read from the data.
+`correctIndex` is **0-based**: `0` = the first option. Nothing in the code
+assumes four options or eight questions — both come from the data.
 
-Watch for a trailing comma after the last object; JSON does not allow it and the
-whole file will fail to parse. The app will tell you if that happens.
+The app validates all of this at startup and **refuses to boot** if anything is
+wrong: an out-of-range `correctIndex`, a duplicate `id`, a missing field, a
+trailing comma. The error names the offending question. Run `pytest` to check
+content without starting the server.
 
-## Deliberately not here yet
+## Not here yet
 
-No accounts, no backend, no database, no saved progress, no categories, no
-timer, no real exam content, no tests, no deployment.
-
-Each of those has a `TODO:` comment in the code marking where it slots in.
-Find them all with:
+No accounts, no database, no saved progress, no categories, no real exam
+content, no deployment. Each has a `TODO:` comment marking where it slots in:
 
 ```bash
 git grep -n "TODO"
 ```
-
-## Where this goes next
-
-The durable assets are the data shape and the game logic — the rendering layer
-is the cheap, replaceable part.
-
-- **Save progress** → `localStorage`, ~10 lines, no new tools.
-- **Installable on a phone** → add a PWA manifest + service worker.
-- **Real content from a server** → change one `fetch()` URL in `app.js`.
-- **Bigger UI** → port to React/Vite when hand-rolled rendering starts to hurt.
-- **Deploy** → it is already a static site; GitHub Pages or Netlify take the
-  folder as-is, no build.

@@ -1,0 +1,6 @@
+# Development-only dependencies. Kept separate so production does not install
+# a test framework it will never run.
+#
+#   pip install -r requirements.txt -r requirements-dev.txt
+pytest==9.1.1
+httpx2==2.12.0   # required by fastapi's TestClient (httpx v1 is deprecated for this)

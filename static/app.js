@@ -72,14 +72,14 @@ const el = {
    only rejects on *network* failure — a 404 still "succeeds" with ok=false,
    which is why the explicit res.ok check below is required, not optional.
 
-   Heads-up: this fetch fails if you open index.html by double-clicking it.
-   Browsers block file:// fetches for security. Use the local server — see
-   README.md.
+   The URL is a path, not a full address: '/api/questions' means "same server
+   this page came from". That works locally and in production without change,
+   because the API and the frontend are deliberately served from one origin.
    --------------------------------------------------------------------- */
 
 async function loadQuestions() {
   try {
-    const res = await fetch('data/questions.json');
+    const res = await fetch('/api/questions');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     state.questions = data.questions;
@@ -96,9 +96,12 @@ async function loadQuestions() {
   }
 }
 
-// TODO (real content / backend): swap the URL above for an API endpoint.
-// Because everything else reads from `state.questions`, that is the ONLY
-// line that changes. This is the payoff for keeping content out of code.
+// Note: moving from a static file to a real API changed exactly one line —
+// the URL — because everything else reads from `state.questions`. That was
+// the payoff for keeping content out of code.
+//
+// TODO (phase 2): the response shape is unchanged ({version, questions}), so
+// filtering by category becomes a query string: `/api/questions?category=...`.
 
 
 /* ---------------------------------------------------------------------
