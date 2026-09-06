@@ -19,15 +19,14 @@ Python's built-in one just happens to need zero installation.
 
 ### Check it on your phone
 
-Both devices on the same Wi-Fi, then:
+Put both devices on the same Wi-Fi and start the server normally — it already
+listens on every network interface, no extra flags needed.
 
-```bash
-python -m http.server 8000 --bind 0.0.0.0
-```
+Find this machine's local IP (`ipconfig`, look for IPv4 under the Wi-Fi adapter;
+it starts with `192.168.`) and open `http://<that-ip>:8000` on the phone.
 
-Find your machine's local IP (`ipconfig` on Windows, look for IPv4 under your
-Wi-Fi adapter) and open `http://<that-ip>:8000` on the phone. Windows Firewall
-will likely prompt once — allow it on private networks only.
+Windows Firewall prompts on the first external connection: allow it on **private**
+networks only. If the page never loads, the firewall is the first suspect.
 
 ## Files
 
