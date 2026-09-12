@@ -13,8 +13,16 @@ Pydantic is doing three jobs here:
 
 from pydantic import StringConstraints, BaseModel, ConfigDict, Field, model_validator
 from typing import Annotated
+from enum import StrEnum
 
 NonEmptyStr = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+
+
+class Category(StrEnum):
+    SAMHALLE = "samhalle"
+    KULTUR = "kultur"
+    GEOGRAFI = "geografi"
+
 
 class Question(BaseModel):
     # populate_by_name lets us build a Question with EITHER `correct_index`
@@ -23,17 +31,7 @@ class Question(BaseModel):
 
     id: NonEmptyStr
 
-    # TODO(human): constrain `category` to a fixed set of allowed values.
-    #
-    # Today it is a free string, so "samhalle", "samhälle" and "Samhalle" are
-    # three different categories and nothing complains — which will silently
-    # break the category filtering planned for phase 2.
-    #
-    # The data currently uses: samhalle (6), geografi (1), kultur (1).
-    #
-    # Note this is a TYPE change, not a validator — unlike everything else in
-    # this file.
-    category: str
+    category: Category
 
     question: NonEmptyStr
     explanation: NonEmptyStr
