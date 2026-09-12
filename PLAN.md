@@ -3,7 +3,7 @@
 Living document. Edit it when decisions change — a plan that disagrees with
 reality is worse than no plan.
 
-Last updated: 2026-09-06
+Last updated: 2026-09-12
 
 ## Goals & constraints
 
@@ -14,6 +14,8 @@ Last updated: 2026-09-06
   pipeline, not breadth of features.
 - **Ship target:** mobile-friendly website. PWA later as a bounded stretch.
   No app-store app.
+- **Runtime:** Python 3.14, pinned in `.python-version` so local and production
+  match. (3.10 lost security support in October 2026.)
 
 ## Architecture
 
@@ -58,21 +60,35 @@ Those arrive with attempt logging, so the database arrives then too.
 
 Each phase ends with something deployed and working.
 
-### Phase 1 — "Hello, production" ← next
-The minimal complete slice: the whole arc in ~60 lines of Python.
-- FastAPI app; `GET /api/questions`; serves the existing static files
-- `app.js` changes one line: fetch the API instead of the local file
-- Pydantic models validate every question at startup — a bad `correctIndex`
-  fails loudly instead of shipping
-- Two pytest tests
-- Deployed to a public HTTPS URL
+### Phase 1 — "Hello, production" ← in progress
+The minimal complete slice: the whole arc, idea to public URL.
+- [x] FastAPI app; `GET /api/questions` and `/api/health`; serves the static site
+- [x] Frontend moved to `static/` so the repo root is never web-exposed
+- [x] `app.js` fetches the API instead of the local file (one line changed)
+- [x] Pydantic models validate every question at startup — bad content fails
+      the boot instead of shipping
+- [x] 13 pytest tests, covering the API and the content itself
+- [x] Python 3.14, pinned
+- [ ] **Pushed to GitHub**
+- [ ] **Deployed to a public HTTPS URL** ← the only thing left
+
+Validation ended up richer than planned, which is deliberate — it is the safety
+net phase 2 leans on:
+- `NonEmptyStr` (strips whitespace, requires content) on id, question,
+  explanation and every option
+- `correctIndex` must point at an option that exists
+- options must be unique within a question
+- ids must be unique across the set
+- `category` is a `StrEnum`, so a typo cannot invent a phantom category
 
 ### Phase 2 — Content
 The actual product work, and where most of the value is.
-- Grow to ~50 real questions
-- Add `category`, `source`, and a `verified` flag
-- GitHub Action validating content on every push, so broken JSON cannot deploy
+- Grow to ~50 real questions (adding categories to the `Category` enum as needed)
+- Add `source` (where the fact came from) and a `verified` flag, so unreviewed
+  LLM-drafted questions can be kept out of the served set
+- GitHub Action running the tests on every push, so broken content cannot deploy
 - `localStorage` so a refresh does not wipe a run (no accounts needed)
+- Add a formatter (`ruff format`) before the codebase grows
 
 ### Phase 3 — The write path
 - Log anonymous attempts: question id, right/wrong. No personal data.
