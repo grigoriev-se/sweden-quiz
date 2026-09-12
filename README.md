@@ -8,8 +8,11 @@ See [PLAN.md](PLAN.md) for the architecture and roadmap.
 
 ## Setup (once)
 
+Needs Python 3.14 (the version is pinned in `.python-version`). On Windows the
+`py` launcher picks it explicitly, even with older Pythons installed:
+
 ```bash
-python -m venv .venv
+py -3.14 -m venv .venv
 ```
 
 Then install dependencies:
