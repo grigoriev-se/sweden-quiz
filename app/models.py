@@ -11,21 +11,33 @@ Pydantic is doing three jobs here:
   3. serialising — Python objects back into the JSON the browser receives
 """
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import StringConstraints, BaseModel, ConfigDict, Field, model_validator
+from typing import Annotated
 
+NonEmptyStr = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
 class Question(BaseModel):
     # populate_by_name lets us build a Question with EITHER `correct_index`
     # (Python style) or `correctIndex` (the JSON key). See the alias note below.
     model_config = ConfigDict(populate_by_name=True)
 
-    id: str
-    category: str
-    question: str
+    id: NonEmptyStr
 
-    # min_length=2 — a "multiple choice" question with one option is a bug,
-    # not a question. Pydantic enforces this for free.
-    options: list[str] = Field(min_length=2)
+    # TODO(human): constrain `category` to a fixed set of allowed values.
+    #
+    # Today it is a free string, so "samhalle", "samhälle" and "Samhalle" are
+    # three different categories and nothing complains — which will silently
+    # break the category filtering planned for phase 2.
+    #
+    # The data currently uses: samhalle (6), geografi (1), kultur (1).
+    #
+    # Note this is a TYPE change, not a validator — unlike everything else in
+    # this file.
+    category: str
+
+    question: NonEmptyStr
+    explanation: NonEmptyStr
+    options: list[NonEmptyStr] = Field(min_length=2)   # 2+ options, none blank
 
     # Two naming conventions meet at this boundary: JavaScript says camelCase,
     # Python says snake_case. The alias lets each side keep its own idiom —
@@ -34,7 +46,6 @@ class Question(BaseModel):
     # difference. This is the standard fix for that clash.
     correct_index: int = Field(alias="correctIndex", ge=0)
 
-    explanation: str
 
     @model_validator(mode="after")
     def correct_index_must_point_at_a_real_option(self):
@@ -50,6 +61,13 @@ class Question(BaseModel):
             )
         return self
 
+    @model_validator(mode="after")
+    def answers_must_be_unique(self):
+        if len(self.options) != len(set(self.options)):
+            raise ValueError(
+                f"Answers to question {self.id!r} are not unique!"
+            )
+        return self
 
 class QuestionSet(BaseModel):
     """The whole file: a version plus the questions.
