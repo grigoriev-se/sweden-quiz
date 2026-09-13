@@ -8,7 +8,11 @@ desktop.ini
 .vscode/
 .idea/
 
-# Python (from `python -m http.server`, and anything we add later)
+# Personal build journal. Kept local on purpose — it is a private manuscript,
+# not project documentation. PLAN.md and README.md are the published ones.
+DEVLOG.md
+
+# Python
 __pycache__/
 *.pyc
 .venv/
