@@ -1,0 +1,30 @@
+# Render Blueprint — how this app runs in production.
+#
+# Kept in git on purpose: the deploy configuration is versioned and reviewable
+# alongside the code, rather than living only in a web dashboard.
+# Spec: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: sweden-quiz            # becomes the hostname: sweden-quiz.onrender.com
+    runtime: python              # interpreter version comes from .python-version
+    plan: free
+
+    # Cannot be changed after the service is created. Frankfurt is the closest
+    # of Render's regions to Sweden; the default would be Oregon, in the US.
+    region: frankfurt
+
+    # Only the runtime dependencies. This is why requirements-dev.txt is a
+    # separate file: production has no use for pytest.
+    buildCommand: pip install -r requirements.txt
+
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+
+    # Render polls this to decide whether a deploy succeeded. Content that fails
+    # Pydantic validation stops the app booting, so the check never passes and
+    # the deploy is marked failed. On paid instances Render then keeps the
+    # previous version serving; its docs don't confirm that for free instances,
+    # which spin down when idle anyway.
+    healthCheckPath: /api/health
+
+    # Deploys automatically on every push to main (Render's default).
