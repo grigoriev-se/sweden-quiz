@@ -4,6 +4,10 @@ A walking skeleton for a Swedish citizenship-test practice quiz.
 FastAPI backend, plain HTML/CSS/JavaScript frontend, questions in a JSON file.
 No build step, no database, no framework on the frontend.
 
+**Live: <https://sweden-quiz.onrender.com>** — hosted on Render's free plan, so
+it sleeps after 15 minutes of inactivity; the first visit takes about a minute
+to wake it.
+
 See [PLAN.md](PLAN.md) for the architecture and roadmap.
 
 ## Setup (once)

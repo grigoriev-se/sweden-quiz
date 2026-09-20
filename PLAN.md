@@ -3,7 +3,7 @@
 Living document. Edit it when decisions change — a plan that disagrees with
 reality is worse than no plan.
 
-Last updated: 2026-09-12
+Last updated: 2026-09-20
 
 ## Goals & constraints
 
@@ -60,8 +60,11 @@ Those arrive with attempt logging, so the database arrives then too.
 
 Each phase ends with something deployed and working.
 
-### Phase 1 — "Hello, production" ← in progress
+### Phase 1 — "Hello, production" ✅ DONE (2026-09-20)
 The minimal complete slice: the whole arc, idea to public URL.
+
+**Live: https://sweden-quiz.onrender.com**
+
 - [x] FastAPI app; `GET /api/questions` and `/api/health`; serves the static site
 - [x] Frontend moved to `static/` so the repo root is never web-exposed
 - [x] `app.js` fetches the API instead of the local file (one line changed)
@@ -69,8 +72,9 @@ The minimal complete slice: the whole arc, idea to public URL.
       the boot instead of shipping
 - [x] 13 pytest tests, covering the API and the content itself
 - [x] Python 3.14, pinned
-- [ ] **Pushed to GitHub**
-- [ ] **Deployed to a public HTTPS URL** ← the only thing left
+- [x] Pushed to GitHub (`grigoriev-se/sweden-quiz`)
+- [x] Deployed to a public HTTPS URL, via a `render.yaml` Blueprint so the
+      deploy config is in git rather than a dashboard
 
 Validation ended up richer than planned, which is deliberate — it is the safety
 net phase 2 leans on:
@@ -107,9 +111,12 @@ Manifest + service worker. Installable, works offline.
 - [ ] **Exam status.** Confirm the current status and format of the Swedish
       citizenship knowledge requirement via Migrationsverket / official sources.
       If the format is not final, keep phases 1–2 lean.
-- [ ] **Hosting.** Render (simplest; free tier sleeps, ~30–50s cold start) vs
-      Fly.io (more capable, Stockholm region, more concepts). Check current
-      pricing — free tiers change.
+- [x] **Hosting — decided: Render**, free plan, Frankfurt region (immutable).
+      Known limits: sleeps after 15 min idle and takes ~1 min to wake; 750
+      instance hours/month per workspace; ephemeral filesystem (harmless —
+      content is in git). Free Postgres expires 30 days after creation and is
+      then deleted, so **phase 3 requires a paid database** or another provider.
+      Nothing in the repo is Render-specific except `render.yaml`.
 - [ ] **Copyright rule.** Facts are not copyrightable; the expression of a
       question is. Decide the rule now, at 8 questions, not at 200. Working
       assumption: write original questions from factual source material, never
