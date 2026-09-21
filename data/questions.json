@@ -4,7 +4,7 @@
   "questions": [
     {
       "id": "q1",
-      "category": "historia",
+      "category": "omvarlden",
       "question": "Vilket år blev Sverige medlem i Europeiska unionen (EU)?",
       "options": ["1975", "1985", "1995", "2005"],
       "correctIndex": 2,
