@@ -1,0 +1,41 @@
+# Runs the test suite on GitHub's machines, so nothing reaches `main` untested.
+#
+# `main` is what Render deploys, so once branch protection requires this check,
+# production can only ever contain code that passed it.
+
+name: tests
+
+on:
+  # Every PR gets a check that can block merging.
+  pull_request:
+  # Anything that lands on main another way (e.g. an edit in GitHub's web UI)
+  # is still tested.
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    # A fresh Linux VM, discarded afterwards. Linux on purpose: it is what
+    # Render runs, so Windows-only assumptions (case-insensitive paths, say)
+    # fail here instead of in production.
+    runs-on: ubuntu-latest
+
+    steps:
+      # The runner starts empty; this clones the commit being tested.
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version-file: '.python-version'
+          # Reuse downloaded packages between runs. The cache key is a hash of
+          # these files, so changing a pinned version invalidates it.
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      # Both files: unlike production, CI needs pytest.
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+
+      # pytest.ini supplies pythonpath and testpaths, so no arguments needed.
+      - run: pytest -v
