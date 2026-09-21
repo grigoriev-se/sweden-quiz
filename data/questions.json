@@ -4,7 +4,7 @@
   "questions": [
     {
       "id": "q1",
-      "category": "samhalle",
+      "category": "omvarlden",
       "question": "Vilket år blev Sverige medlem i Europeiska unionen (EU)?",
       "options": ["1975", "1985", "1995", "2005"],
       "correctIndex": 2,
@@ -12,7 +12,7 @@
     },
     {
       "id": "q2",
-      "category": "samhalle",
+      "category": "styre",
       "question": "Hur många ledamöter har Sveriges riksdag?",
       "options": ["249", "301", "349", "401"],
       "correctIndex": 2,
@@ -20,7 +20,7 @@
     },
     {
       "id": "q3",
-      "category": "kultur",
+      "category": "traditioner",
       "question": "Vilket datum firas Sveriges nationaldag?",
       "options": ["1 maj", "6 juni", "24 juni", "13 december"],
       "correctIndex": 1,
@@ -28,7 +28,7 @@
     },
     {
       "id": "q4",
-      "category": "samhalle",
+      "category": "styre",
       "question": "Vem är Sveriges statschef?",
       "options": ["Statsministern", "Kungen", "Riksdagens talman", "Justitiekanslern"],
       "correctIndex": 1,
@@ -36,7 +36,7 @@
     },
     {
       "id": "q5",
-      "category": "samhalle",
+      "category": "val_och_partier",
       "question": "Hur ofta hålls ordinarie val till riksdagen?",
       "options": ["Vartannat år", "Vart tredje år", "Vart fjärde år", "Vart femte år"],
       "correctIndex": 2,
@@ -44,7 +44,7 @@
     },
     {
       "id": "q6",
-      "category": "geografi",
+      "category": "landet",
       "question": "Vilken är Sveriges största sjö?",
       "options": ["Vättern", "Mälaren", "Vänern", "Hjälmaren"],
       "correctIndex": 2,
@@ -52,7 +52,7 @@
     },
     {
       "id": "q7",
-      "category": "samhalle",
+      "category": "valfardssamhallet",
       "question": "Vilken myndighet ansvarar för folkbokföringen i Sverige?",
       "options": ["Skatteverket", "Migrationsverket", "Försäkringskassan", "Polismyndigheten"],
       "correctIndex": 0,
@@ -60,7 +60,7 @@
     },
     {
       "id": "q8",
-      "category": "samhalle",
+      "category": "val_och_partier",
       "question": "Vid vilken ålder får man rösta i riksdagsvalet?",
       "options": ["16 år", "18 år", "20 år", "21 år"],
       "correctIndex": 1,

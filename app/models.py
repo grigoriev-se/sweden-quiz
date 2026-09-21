@@ -19,9 +19,26 @@ NonEmptyStr = Annotated[str, StringConstraints(strip_whitespace=True, min_length
 
 
 class Category(StrEnum):
-    SAMHALLE = "samhalle"
-    KULTUR = "kultur"
-    GEOGRAFI = "geografi"
+    """Which chapter of UHR's official study book teaches this question.
+
+    The chapters are the test's subject areas, so one field covers both
+    "where is this taught" and "what is it about". Inledning is framing, not
+    examinable content, so it has no member.
+    """
+
+    LANDET = "landet"
+    DEMOKRATI = "demokrati"
+    STYRE = "styre"
+    VAL_OCH_PARTIER = "val_och_partier"
+    LAG_OCH_RATT = "lag_och_ratt"
+    MEDIA = "media"
+    MANSKLIGA_RATTIGHETER = "manskliga_rattigheter"
+    ARBETSMARKNAD_OCH_PRIVATEKONOMI = "arbetsmarknad_och_privatekonomi"
+    VALFARDSSAMHALLET = "valfardssamhallet"
+    HISTORIA = "historia"
+    OMVARLDEN = "omvarlden"
+    SEKULAR_STAT = "sekular_stat"
+    TRADITIONER = "traditioner"
 
 
 class Question(BaseModel):
