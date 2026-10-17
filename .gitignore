@@ -1,3 +1,8 @@
+# Source material (UHR's study book etc). Kept locally for writing and
+# verifying questions, never committed: it is someone else's copyrighted work
+# and this repo is public. Questions cite it by section and page instead.
+*.pdf
+
 # Local tooling config (Claude Code's dev-server launcher) — not part of the app
 .claude/
 

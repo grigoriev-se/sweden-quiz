@@ -150,6 +150,21 @@ wrong". If an id is reused, the old question's history silently merges with
 the new one's and there is no way to separate them afterwards. The same
 applies to any `localStorage` memory of which questions a user has seen.
 
+#### Duplicate questions are only caught when the text matches
+`test_question_texts_are_unique` compares question text lowercased with
+whitespace collapsed. That catches copy-paste and reformatting. It does not
+catch rephrasing: "Hur manga ledamoter har riksdagen?" and "Hur manga
+ledamoter har Sveriges riksdag?" are different strings and both pass.
+
+Good enough for now. The realistic failure while drafting in batches is the
+same question produced twice from the same section, which this catches. If
+rephrased near-duplicates start appearing, `difflib.SequenceMatcher` with a
+high threshold (~0.9) is the stdlib option -- deferred because a threshold
+turns a clear failure into a judgement call.
+
+Duplicate *ids* are a different matter and fail in the model, because they
+break the data rather than the content.
+
 #### Known gap: section and category are not cross-checked
 `category` names the chapter; `source.section` names a sub-section inside it.
 Those overlap, and nothing validates that the section actually belongs to the
