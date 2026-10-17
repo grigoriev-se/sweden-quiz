@@ -3,7 +3,7 @@
 Living document. Edit it when decisions change — a plan that disagrees with
 reality is worse than no plan.
 
-Last updated: 2026-09-20
+Last updated: 2026-10-16
 
 ## Goals & constraints
 
@@ -85,14 +85,102 @@ net phase 2 leans on:
 - ids must be unique across the set
 - `category` is a `StrEnum`, so a typo cannot invent a phantom category
 
-### Phase 2 — Content
+### Phase 2 — Content ← in progress
 The actual product work, and where most of the value is.
-- Grow to ~50 real questions (adding categories to the `Category` enum as needed)
-- Add `source` (where the fact came from) and a `verified` flag, so unreviewed
-  LLM-drafted questions can be kept out of the served set
-- GitHub Action running the tests on every push, so broken content cannot deploy
-- `localStorage` so a refresh does not wipe a run (no accounts needed)
-- Add a formatter (`ruff format`) before the codebase grows
+
+- [x] **GitHub Actions** runs pytest on every pull request and on pushes to
+      main. `main` is protected: no merge without a green `test` check, no
+      force pushes, changes only through a PR. Since Render deploys `main`,
+      production can only contain tested code.
+- [x] **Categories are UHR's book chapters** (13, Inledning excluded), not
+      invented ones. A category means *where the book teaches this*, which is
+      what settles otherwise-ambiguous questions. `tests/test_models.py`
+      enforces the naming convention: value = member name, lowercased, ASCII.
+- [ ] **`source` and `verified`** (this PR). `source` is `{section, page}`;
+      the chapter is already in `category` and is not duplicated, and the book
+      edition is recorded once on `QuestionSet`. `verified` defaults to false,
+      only verified questions are served, and a verified question must cite a
+      source. The app refuses to start if nothing is verified.
+- [ ] Verify the 8 placeholder questions against the book
+- [ ] Grow to ~50 real questions
+- [ ] `localStorage` so a refresh does not wipe a run (no accounts needed)
+- [ ] Add a formatter (`ruff format`) before the codebase grows
+
+#### What `verified: true` asserts
+Everything in the question is supported by the cited source: the question
+text, the correct answer **and the explanation**. Not "someone glanced at it".
+
+Explanations stay within what the book covers. Adding true-but-unexamined
+detail quietly widens what a learner thinks is on the test, and it makes
+`verified` mean less than it claims. If a fact is worth including and the book
+does not cover it, it needs its own source -- see the deferred note below.
+
+Consequence for the 8 placeholder questions: they were written from general
+knowledge, not from the book, so several explanations contain detail UHR does
+not mention. Verifying them means checking the explanation against the page,
+not only the answer.
+
+#### What goes in `source.section`
+The heading **as it appears in the table of contents**, not a deeper
+sub-heading. The book nests three levels: chapter -> section -> sub-heading.
+`category` covers the chapter; `section` covers the ToC level; `page` provides
+the precision below that.
+
+Example: the fact that the Riksdag has 349 members sits under "Staten", which
+sits under "Landet styrs pa olika nivaer" in the chapter "Sa har styrs
+Sverige". The section is **"Landet styrs pa olika nivaer"** -- the ToC
+heading -- not "Staten".
+
+Why the ToC level: it is a closed, enumerable set, which is what would make
+the cross-check below implementable one day. Sub-headings are not listed
+anywhere, so there would be nothing to validate against. If the sub-heading is
+ever genuinely needed, it gets its own optional field rather than overloading
+this one.
+
+#### Question ids are permanent
+An id is never reused. Deleting a question retires its id, leaving a gap in
+the numbering; a replacement question gets a new one.
+
+Nothing stores ids today, so reuse is currently harmless -- the voting-age
+question was renumbered q8 -> q7 before this rule existed, and the numbering
+is intentionally left as it is. From here on, ids are fixed.
+
+Why it matters from phase 3: attempt logging stores rows like "someone got q7
+wrong". If an id is reused, the old question's history silently merges with
+the new one's and there is no way to separate them afterwards. The same
+applies to any `localStorage` memory of which questions a user has seen.
+
+#### Known gap: section and category are not cross-checked
+`category` names the chapter; `source.section` names a sub-section inside it.
+Those overlap, and nothing validates that the section actually belongs to the
+chapter — a question tagged `styre` could cite "Kallkritik", which lives under
+Mediernas roll, and every check would pass.
+
+Both are kept because they serve different consumers: `category` is a
+validated enum for filtering and statistics, `section` and `page` are for a
+human going back to the book, and the section name survives a new edition
+where page numbers do not.
+
+Closing the gap would need a chapter -> sections table to validate against.
+That is real maintenance for a mistake review is likely to catch, so it stays
+open deliberately. Revisit if mis-tagged sections actually show up.
+
+#### Deferred: questions not from the book
+Worth having eventually — relevant questions the book does not cover. Not now:
+with zero real questions written, the first fifty should come from the book,
+because that is what is examined.
+
+Two things would change when it happens, and neither needs a database —
+questions stay in git:
+- `category` would shift meaning from "where the book teaches this" to "topic",
+  or become optional for non-book questions.
+- `source` would become a discriminated union on a `kind` field
+  (`{"kind": "book", section, page}` vs `{"kind": "web", title, url}`).
+  `source` is already its own model, so that change is contained.
+
+There is also a product question: mixing non-examined material into the same
+quiz dilutes "am I ready?". Such questions probably belong in an opt-in mode
+rather than shuffled in. Revisit on the first real example.
 
 ### Phase 3 — The write path
 - Log anonymous attempts: question id, right/wrong. No personal data.

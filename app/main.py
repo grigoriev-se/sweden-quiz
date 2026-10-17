@@ -43,6 +43,34 @@ def load_questions() -> QuestionSet:
 QUESTION_SET = load_questions()
 
 
+def select_served(question_set: QuestionSet) -> QuestionSet:
+    """Keep only the questions a human has checked against their source.
+
+    Everything in the file is validated; only verified questions are served.
+    Unverified drafts stay in the repo, visible in pull requests, invisible to
+    users.
+    """
+    verified = [q for q in question_set.questions if q.verified]
+
+    # Checked explicitly so the failure reads clearly. QuestionSet requires at
+    # least one question, so an empty list would otherwise fail with a generic
+    # complaint about min_length on a list nobody wrote by hand.
+    if not verified:
+        raise RuntimeError(
+            f"No verified questions: {len(question_set.questions)} question(s) "
+            "loaded, none with verified=true. The quiz would be empty, so the "
+            "app refuses to start. Verify a question against its source and "
+            "set verified: true."
+        )
+
+    return question_set.model_copy(update={"questions": verified})
+
+
+# Built once at startup, like QUESTION_SET. Serving is a filtered view of the
+# validated content, not a separate source of truth.
+SERVED_SET = select_served(QUESTION_SET)
+
+
 app = FastAPI(
     title="Medborgarskapsprovet – övning",
     version="0.1.0",
@@ -62,12 +90,19 @@ def health() -> dict:
     succeeded and whether the app is still alive. Cheap to add now, annoying
     to add later while debugging a failing deploy.
     """
-    return {"status": "ok", "questions": len(QUESTION_SET.questions)}
+    return {
+        "status": "ok",
+        "questions": len(QUESTION_SET.questions),   # everything in the file
+        "served": len(SERVED_SET.questions),        # verified subset
+    }
 
 
 @app.get("/api/questions", response_model=QuestionSet)
 def get_questions() -> QuestionSet:
-    """Every question, as one payload.
+    """The verified questions, as one payload.
+
+    Unverified drafts are excluded here, not at load time, so they are still
+    validated at startup and still break the build if malformed.
 
     `response_model` makes FastAPI validate what we send as well as what we
     receive, and it is what applies the camelCase aliases on the way out.
@@ -78,7 +113,7 @@ def get_questions() -> QuestionSet:
     TODO: if scores ever become meaningful (leaderboards, certificates), stop
     sending the answers and move grading to a POST endpoint on the server.
     """
-    return QUESTION_SET
+    return SERVED_SET
 
 
 # ---------------------------------------------------------------------------

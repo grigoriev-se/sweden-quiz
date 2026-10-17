@@ -41,6 +41,20 @@ class Category(StrEnum):
     TRADITIONER = "traditioner"
 
 
+class Source(BaseModel):
+    """Where in UHR's book this question's fact is taught.
+
+    The chapter is already recorded in `Question.category`, so this holds only
+    what is more specific. Storing the chapter twice would let the two copies
+    disagree.
+
+    The book's edition belongs once on QuestionSet, not on every question.
+    """
+
+    section: NonEmptyStr          # e.g. "Nordiskt och europeiskt samarbete"
+    page: int = Field(ge=1)
+
+
 class Question(BaseModel):
     # populate_by_name lets us build a Question with EITHER `correct_index`
     # (Python style) or `correctIndex` (the JSON key). See the alias note below.
@@ -61,6 +75,18 @@ class Question(BaseModel):
     # difference. This is the standard fix for that clash.
     correct_index: int = Field(alias="correctIndex", ge=0)
 
+    # Has a human checked this question against the source?
+    #
+    # Default False on purpose: a question where the field was forgotten is
+    # treated as unchecked and is not served. The careless path is the safe
+    # one. Only verified questions reach users; unverified drafts still live
+    # in the repo and are still fully validated.
+    verified: bool = False
+
+    # Optional, because a draft can exist before anyone has cited it.
+    # `verified_question_must_cite_source` below stops it staying that way:
+    # a question can be uncited, or verified, but not both.
+    source: Source | None = None
 
     @model_validator(mode="after")
     def correct_index_must_point_at_a_real_option(self):
@@ -84,6 +110,14 @@ class Question(BaseModel):
             )
         return self
 
+    @model_validator(mode="after")
+    def verified_question_must_cite_source(self):
+        if self.verified and self.source is None:
+            raise ValueError(
+                f"question {self.id!r} is verified but does not cite a source!"
+            )
+        return self
+
 class QuestionSet(BaseModel):
     """The whole file: a version plus the questions.
 
@@ -93,6 +127,13 @@ class QuestionSet(BaseModel):
     """
 
     version: int
+
+    # Which edition of UHR's book the page numbers in `Source` refer to.
+    # Recorded once here rather than on every question: a page number means
+    # nothing without it, and UHR has already issued a corrected version that
+    # changed content on a page we cite.
+    book_edition: str | None = None
+
     questions: list[Question] = Field(min_length=1)
 
     @model_validator(mode="after")
@@ -104,6 +145,3 @@ class QuestionSet(BaseModel):
             seen.add(q.id)
         return self
 
-
-# TODO (phase 2): add `source` (where the fact came from) and `verified: bool`
-# so unreviewed LLM-drafted questions can be kept out of the served set.
