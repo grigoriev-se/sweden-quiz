@@ -102,3 +102,27 @@ def test_health_reports_both_counts():
     assert body["questions"] == len(QUESTION_SET.questions)
     assert body["served"] == len(SERVED_SET.questions)
 
+
+def _normalise(text: str) -> str:
+    """Lowercased, with runs of whitespace collapsed.
+
+    Enough to catch copy-paste and reformatting, not clever enough to catch
+    rephrasing. See the note in PLAN.md.
+    """
+    return " ".join(text.lower().split())
+
+
+def test_question_texts_are_unique():
+    """Duplicate ids are caught by the model; duplicate *questions* are not.
+
+    Asking the same thing twice is a content bug rather than a broken app, so
+    it fails the build here instead of refusing to boot. It matters most when
+    drafting in batches from overlapping sections, where the same fact is easy
+    to turn into the same question twice.
+    """
+    seen: dict[str, str] = {}
+    for q in QUESTION_SET.questions:
+        key = _normalise(q.question)
+        assert key not in seen, f"{q.id} asks the same question as {seen[key]}"
+        seen[key] = q.id
+
