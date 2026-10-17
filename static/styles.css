@@ -30,6 +30,18 @@
    which is what you intuitively expect. The default (content-box) does not. */
 *, *::before, *::after { box-sizing: border-box; }
 
+/* The `hidden` attribute must always win.
+   Browsers supply `[hidden] { display: none }` in their own stylesheet, but
+   that is the weakest possible source, so ANY rule of ours that sets display
+   silently beats it. `.btn { display: block }` below did exactly that: the
+   JS set btn-next.hidden = true on every unanswered question, the attribute
+   was there in the DOM, and the button stayed on screen and clickable — so
+   a question could be skipped without answering it.
+   The app toggles `hidden` on seven elements, so this is an invariant, not a
+   style preference: nothing should ever make a hidden element visible.
+   !important is the right tool for exactly that, and nothing else here. */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   /* System font stack = native look on every OS, zero download, no layout

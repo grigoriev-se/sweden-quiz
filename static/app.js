@@ -40,6 +40,26 @@ const state = {
 
 
 /* ---------------------------------------------------------------------
+   1b. DERIVED STATE
+
+   How long one run is. Four places need this number — the progress text,
+   the two "is this the last question" checks, and the score denominator —
+   and all four mean the same thing, so all four read it from here rather
+   than from state.questions.length directly.
+
+   Today a run is every verified question, so that is all this returns. The
+   point of the function is not what it computes but that it has a name: when
+   a run becomes a sample of the library instead of all of it, this is the
+   only place that changes. See "Deferred: a run is the whole set" in PLAN.md
+   for why that change is not just a smaller number.
+   --------------------------------------------------------------------- */
+
+function runLength() {
+  return state.questions.length;
+}
+
+
+/* ---------------------------------------------------------------------
    2. ELEMENT REFERENCES
 
    Looked up once, at startup, instead of on every render. Cheaper, and it
@@ -56,6 +76,7 @@ const el = {
   btnRestart:   document.getElementById('btn-restart'),
 
   loadError:    document.getElementById('load-error'),
+  questionCount: document.getElementById('question-count'),
   progress:     document.getElementById('progress'),
   questionText: document.getElementById('question-text'),
   options:      document.getElementById('options'),
@@ -84,6 +105,8 @@ async function loadQuestions() {
     const data = await res.json();
     state.questions = data.questions;
 
+    // state.questions.length, not runLength(): this asks "did the library
+    // load at all", which is a different question from "how long is a run".
     if (!state.questions || state.questions.length === 0) {
       throw new Error('Inga frågor i filen');
     }
@@ -116,8 +139,23 @@ function render() {
   el.screenQuiz.hidden   = state.screen !== 'quiz';
   el.screenResult.hidden = state.screen !== 'result';
 
+  if (state.screen === 'start')  renderStart();
   if (state.screen === 'quiz')   renderQuestion();
   if (state.screen === 'result') renderResult();
+}
+
+
+function renderStart() {
+  const n = runLength();
+
+  // "1 fråga", not "1 frågor". Reachable today rather than hypothetical:
+  // verify exactly one question and the app boots perfectly happily.
+  el.questionCount.textContent = n === 1 ? '1 fråga' : `${n} frågor`;
+
+  // Nothing loaded means nothing to promise. loadQuestions() has already
+  // shown the error and disabled the button in that case, so the count just
+  // stays out of the way.
+  el.questionCount.hidden = n === 0;
 }
 
 
@@ -125,7 +163,7 @@ function renderQuestion() {
   const q = state.questions[state.index];
   const answered = state.selected !== null;
 
-  el.progress.textContent = `Fråga ${state.index + 1} av ${state.questions.length}`;
+  el.progress.textContent = `Fråga ${state.index + 1} av ${runLength()}`;
 
   // textContent, never innerHTML: textContent treats the string as plain text,
   // so question content can never inject markup or scripts. Habit worth having
@@ -168,7 +206,7 @@ function renderQuestion() {
   }
 
   const isCorrect = state.selected === q.correctIndex;
-  const isLast = state.index === state.questions.length - 1;
+  const isLast = state.index === runLength() - 1;
 
   el.feedback.className = `feedback ${isCorrect ? 'is-correct' : 'is-wrong'}`;
   el.feedback.textContent = `${isCorrect ? 'Rätt!' : 'Fel.'} ${q.explanation}`;
@@ -180,7 +218,7 @@ function renderQuestion() {
 
 
 function renderResult() {
-  const total = state.questions.length;
+  const total = runLength();
   el.score.textContent = `${state.score} av ${total} rätt`;
 
   // TODO (scoring rules): the real medborgarskapsprov has a defined pass
@@ -218,7 +256,7 @@ function selectAnswer(i) {
 }
 
 function nextQuestion() {
-  if (state.index === state.questions.length - 1) {
+  if (state.index === runLength() - 1) {
     state.screen = 'result';
   } else {
     state.index++;
