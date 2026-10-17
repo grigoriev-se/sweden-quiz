@@ -12,7 +12,7 @@ while still exercising routing, serialisation and status codes.
 import pytest
 from fastapi.testclient import TestClient
 
-from app.main import QUESTION_SET, app
+from app.main import QUESTION_SET, SERVED_SET, app
 
 client = TestClient(app)
 
@@ -25,12 +25,6 @@ def test_health_reports_ok():
     res = client.get("/api/health")
     assert res.status_code == 200
     assert res.json()["status"] == "ok"
-
-
-def test_questions_endpoint_returns_every_question():
-    res = client.get("/api/questions")
-    assert res.status_code == 200
-    assert len(res.json()["questions"]) == len(QUESTION_SET.questions)
 
 
 def test_api_speaks_camelcase_to_the_frontend():
@@ -73,3 +67,38 @@ def test_question_is_well_formed(q):
 def test_question_ids_are_unique():
     ids = [q.id for q in QUESTION_SET.questions]
     assert len(ids) == len(set(ids))
+
+
+# --------------------------------------------------------------------------
+# Only verified content is served
+# --------------------------------------------------------------------------
+
+def test_api_serves_exactly_the_verified_questions():
+    """Everything in the file is validated; only verified questions ship."""
+    expected = [q for q in QUESTION_SET.questions if q.verified]
+    served = client.get("/api/questions").json()["questions"]
+
+    assert len(served) == len(expected)
+    assert {q["id"] for q in served} == {q.id for q in expected}
+
+
+def test_nothing_unverified_is_served():
+    for q in SERVED_SET.questions:
+        assert q.verified, f"{q.id} is served but not verified"
+        assert q.source is not None, f"{q.id} is served without a source"
+
+
+def test_served_set_is_not_empty():
+    """Guards against quietly shipping a quiz with no questions.
+
+    select_served() already refuses to start in that case, so this test fails
+    at collection rather than here — but it states the requirement explicitly.
+    """
+    assert len(SERVED_SET.questions) > 0
+
+
+def test_health_reports_both_counts():
+    body = client.get("/api/health").json()
+    assert body["questions"] == len(QUESTION_SET.questions)
+    assert body["served"] == len(SERVED_SET.questions)
+
