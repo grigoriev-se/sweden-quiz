@@ -122,7 +122,8 @@ app cannot warn you about — `verified` simply defaults to false and the
 question goes quietly missing from the quiz. Misspelling a key *is* caught:
 unknown fields are rejected at startup.
 
-Nothing in the code assumes four options — that comes from the data.
+Nothing in the code assumes four options, or any particular number of
+questions — both come from the data.
 
 The app validates all of this at startup and **refuses to boot** if anything is
 wrong: an out-of-range `correctIndex`, a duplicate `id`, a missing field, a

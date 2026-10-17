@@ -216,6 +216,38 @@ There is also a product question: mixing non-examined material into the same
 quiz dilutes "am I ready?". Such questions probably belong in an opt-in mode
 rather than shuffled in. Revisit on the first real example.
 
+#### Deferred: a run is the whole set
+Every run serves every verified question, in file order. At 7 that is the
+product; at ~200 it is neither finishable nor varied, and a second run is
+identical to the first. A run needs to become a shuffled sample of N.
+
+**A cap without a shuffle is worse than no cap.** Taking the first N in file
+order means taking them in the order they were drafted, and they are drafted
+chapter by chapter -- so every run would be chapter one, every time, and the
+rest of the book would be unreachable. The cap and the shuffle are one
+change, not two. This is why there is no RUN_LENGTH constant sitting in
+app.js waiting to be lowered: a seam that looks one edit away from working,
+and is not, is worse than no seam.
+
+The options need shuffling too, and sooner than it looks: `correctIndex` is 1
+in five of the seven questions. Position is currently a better predictor of
+the answer than knowledge is.
+
+Three things are already settled when this is picked up:
+- **`runLength()` in app.js is the only place the count comes from.** The
+  progress text, both end-of-run checks and the score denominator read it.
+- **Sampling happens in the browser, not the API.** Phase 5 is an offline
+  PWA, which needs the whole library cached locally; a server that sampled
+  (`/api/questions?limit=20`) would put a network round trip in front of
+  every run and make offline practice impossible. The API keeps returning
+  everything.
+- **The count must be clamped to what exists.** Once questions are filtered
+  by category, a chapter with 8 questions must not advertise a run of 20.
+
+Not now, because it only has to be right by ~50 questions, and `localStorage`
+(above) will want to save a run -- which is easier to design once a run is a
+defined thing rather than "all of them".
+
 ### Phase 3 — The write path
 - Log anonymous attempts: question id, right/wrong. No personal data.
 - Postgres, migrations, connection handling — with a real reason to exist

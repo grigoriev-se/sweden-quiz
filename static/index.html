@@ -21,7 +21,13 @@
     <!-- ============ SCREEN 1: START ============ -->
     <section id="screen-start" class="screen">
       <h1>Medborgarskapsprovet</h1>
-      <p class="lede">Öva inför provet. <strong>8 frågor</strong>, inga konton, inget krångel.</p>
+      <p class="lede">Öva inför provet. Inga konton, inget krångel.</p>
+
+      <!-- Empty on purpose. The question count is data, so renderStart() fills
+           it in; a literal here is how this screen came to claim "8 frågor"
+           while the quiz served 7. `hidden` until there is a number, so a
+           failed fetch shows no count rather than a wrong one. -->
+      <p id="question-count" class="lede" hidden></p>
       <button id="btn-start" class="btn btn-primary" type="button">Starta quiz</button>
       <p id="load-error" class="feedback is-wrong" hidden></p>
     </section>
