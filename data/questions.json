@@ -9,7 +9,7 @@
       "question": "Vilket år blev Sverige medlem i Europeiska unionen (EU)?",
       "options": ["1975", "1985", "1995", "2005"],
       "correctIndex": 2,
-      "explanation": "Sverige gick med i EU den 1995",
+      "explanation": "Sverige gick med i EU 1995.",
       "source": {"section": "Nordiskt och europeiskt samarbete", "page":39},
       "verified": true
     },
@@ -49,7 +49,7 @@
       "question": "Hur ofta hålls ordinarie val till riksdagen?",
       "options": ["Vartannat år", "Vart tredje år", "Vart fjärde år", "Vart femte år"],
       "correctIndex": 2,
-      "explanation": "Ordinarie riksdagsval hålls vart fjärde år",
+      "explanation": "Ordinarie riksdagsval hålls vart fjärde år.",
       "source": {"section": "Val och röstning", "page":14},
       "verified": true
     },

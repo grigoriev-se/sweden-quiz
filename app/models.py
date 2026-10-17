@@ -51,6 +51,10 @@ class Source(BaseModel):
     The book's edition belongs once on QuestionSet, not on every question.
     """
 
+    # See the note on Question.model_config: a misspelled key is a mistake,
+    # not an extension point.
+    model_config = ConfigDict(extra="forbid")
+
     section: NonEmptyStr          # e.g. "Nordiskt och europeiskt samarbete"
     page: int = Field(ge=1)
 
@@ -58,7 +62,16 @@ class Source(BaseModel):
 class Question(BaseModel):
     # populate_by_name lets us build a Question with EITHER `correct_index`
     # (Python style) or `correctIndex` (the JSON key). See the alias note below.
-    model_config = ConfigDict(populate_by_name=True)
+    #
+    # extra="forbid" is the important half. Pydantic's default is to ignore
+    # keys it does not recognise, which makes a typo silent: `"verfied": true`
+    # would parse cleanly, leave `verified` at its False default, and the
+    # question would validate, load, and never be served -- with nothing
+    # printed anywhere. That is the one way bad content can reach production
+    # quietly, which is exactly what startup validation exists to prevent.
+    # Forbidding extras turns every misspelled key into a boot failure that
+    # names the offending field.
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
     id: NonEmptyStr
 
@@ -118,6 +131,7 @@ class Question(BaseModel):
             )
         return self
 
+
 class QuestionSet(BaseModel):
     """The whole file: a version plus the questions.
 
@@ -126,7 +140,21 @@ class QuestionSet(BaseModel):
     the same reasoning as when we chose the file format.
     """
 
+    model_config = ConfigDict(extra="forbid")
+
     version: int
+
+    # JSON has no comment syntax, so questions.json carries its header comment
+    # in a key. Declared rather than tolerated: with extra="forbid" an
+    # undeclared key is now an error, and the alternative -- allowing extras
+    # here -- would also let `"book_editon"` through silently, leaving every
+    # page number without the edition it is meaningless without.
+    #
+    # exclude=True keeps it off the wire. It is a comment addressed to whoever
+    # edits the file, not content, and declaring it without this would start
+    # shipping it to every browser on every load -- which ignoring it as an
+    # unknown key never did.
+    note: str | None = Field(default=None, exclude=True)
 
     # Which edition of UHR's book the page numbers in `Source` refer to.
     # Recorded once here rather than on every question: a page number means
