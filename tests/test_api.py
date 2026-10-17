@@ -126,3 +126,13 @@ def test_question_texts_are_unique():
         assert key not in seen, f"{q.id} asks the same question as {seen[key]}"
         seen[key] = q.id
 
+
+
+def test_the_note_is_not_shipped_to_the_browser():
+    """`note` carries questions.json's header comment, because JSON has no
+    comment syntax. It is declared on the model so that forbidding unknown
+    keys does not reject the file — but it is editor-facing commentary, not
+    content, and declaring a field is enough to start serialising it.
+    """
+    body = client.get("/api/questions").json()
+    assert "note" not in body

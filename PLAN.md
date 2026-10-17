@@ -101,7 +101,9 @@ The actual product work, and where most of the value is.
       edition is recorded once on `QuestionSet`. `verified` defaults to false,
       only verified questions are served, and a verified question must cite a
       source. The app refuses to start if nothing is verified.
-- [ ] Verify the 8 placeholder questions against the book
+- [x] Verify the placeholder questions against the book. 7 of the 8 are
+      sourced and verified; the eighth (which agency handles folkbokföring)
+      was removed rather than verified, because the book does not teach it.
 - [ ] Grow to ~50 real questions
 - [ ] `localStorage` so a refresh does not wipe a run (no accounts needed)
 - [ ] Add a formatter (`ruff format`) before the codebase grows
@@ -149,6 +151,23 @@ Why it matters from phase 3: attempt logging stores rows like "someone got q7
 wrong". If an id is reused, the old question's history silently merges with
 the new one's and there is no way to separate them afterwards. The same
 applies to any `localStorage` memory of which questions a user has seen.
+
+#### Unknown fields are rejected, because a typo was the one silent failure
+Every other content mistake fails the boot. A misspelled key did not: Pydantic
+ignores keys it does not recognise, so `"verfied": true` parsed cleanly, left
+`verified` at its False default, and the question was validated, loaded and
+never served -- with nothing printed anywhere. The one path by which bad
+content reached production quietly was the one `verified` exists to close.
+
+`extra="forbid"` on `Question`, `Source` and `QuestionSet` turns that into a
+boot failure naming the field. It matters more as the set grows: at 7
+questions a missing one is visible in the count, at 200 it is not.
+
+The cost is that questions.json's `note` key -- its header comment, since JSON
+has no comment syntax -- had to be declared rather than tolerated. It is
+`exclude=True`, so it stays off the wire. Tolerating extras on `QuestionSet`
+instead would also have let `"book_editon"` through, leaving every page number
+without the edition it is meaningless without.
 
 #### Duplicate questions are only caught when the text matches
 `test_question_texts_are_unique` compares question text lowercased with

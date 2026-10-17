@@ -101,12 +101,28 @@ Append an object to the `questions` array in `data/questions.json`:
   "question": "Frågetext?",
   "options": ["Alternativ A", "Alternativ B", "Alternativ C", "Alternativ D"],
   "correctIndex": 0,
-  "explanation": "Varför svaret är rätt."
+  "explanation": "Varför svaret är rätt.",
+  "source": {"section": "Rubriken i innehållsförteckningen", "page": 1},
+  "verified": false
 }
 ```
 
-`correctIndex` is **0-based**: `0` = the first option. Nothing in the code
-assumes four options or eight questions — both come from the data.
+`correctIndex` is **0-based**: `0` = the first option.
+
+`verified` and `source` are what decide whether the question ever reaches a
+user. **A question with `verified: false` is validated and loaded but never
+served** — it lives in the repo, visible in pull requests, invisible in the
+quiz. That is the intended workflow: draft it unverified, then check the
+question, the correct answer *and the explanation* against the cited page
+before flipping the flag. A question cannot be `verified: true` without a
+`source`; the app refuses to boot.
+
+Both fields are shown above because leaving them out is the one mistake the
+app cannot warn you about — `verified` simply defaults to false and the
+question goes quietly missing from the quiz. Misspelling a key *is* caught:
+unknown fields are rejected at startup.
+
+Nothing in the code assumes four options — that comes from the data.
 
 The app validates all of this at startup and **refuses to boot** if anything is
 wrong: an out-of-range `correctIndex`, a duplicate `id`, a missing field, a
