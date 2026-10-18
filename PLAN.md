@@ -8,8 +8,7 @@ Last updated: 2026-10-16
 ## Goals & constraints
 
 - **Learning goal:** the whole arc, idea → deployed. Play to Python (FastAPI).
-- **Product goal:** free and publicly usable to start; keep the door open to a
-  real product later.
+- **Product goal:** free and publicly usable.
 - **Scope discipline:** the app stays a tiny walking skeleton. Depth of the
   pipeline, not breadth of features.
 - **Ship target:** mobile-friendly website. PWA later as a bounded stretch.
