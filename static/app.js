@@ -32,6 +32,7 @@ const state = {
   score: 0,           // correct answers so far
   selected: null,     // index of the option clicked; null = not answered yet
   screen: 'start',    // 'start' | 'quiz' | 'result'
+  currentOrder: [],
 };
 
 // TODO (save progress): persist { index, score } to localStorage on every
@@ -144,6 +145,17 @@ function render() {
   if (state.screen === 'result') renderResult();
 }
 
+function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+}
+
+function shuffleQuestionOrder() {
+    state.currentOrder = [...state.questions[state.index].options.keys()];
+    shuffleArray(state.currentOrder);
+};
 
 function renderStart() {
   const n = runLength();
@@ -162,7 +174,6 @@ function renderStart() {
 function renderQuestion() {
   const q = state.questions[state.index];
   const answered = state.selected !== null;
-
   el.progress.textContent = `Fråga ${state.index + 1} av ${runLength()}`;
 
   // textContent, never innerHTML: textContent treats the string as plain text,
@@ -175,24 +186,24 @@ function renderQuestion() {
   // waste at scale is essentially what React's virtual DOM is for.)
   el.options.replaceChildren();
 
-  q.options.forEach((text, i) => {
+  state.currentOrder.forEach(originalIndex => {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'btn option';
-    btn.textContent = text;
+    btn.textContent = q.options[originalIndex];
 
     if (answered) {
       // Once answered, freeze the choices and reveal the truth.
       btn.disabled = true;
-      if (i === q.correctIndex) {
+      if (originalIndex === q.correctIndex) {
         btn.classList.add('correct');
-        btn.textContent = `✓ ${text}`;   // a symbol, not just colour (a11y)
-      } else if (i === state.selected) {
+        btn.textContent = `✓ ${q.options[originalIndex]}`;   // a symbol, not just colour (a11y)
+      } else if (originalIndex === state.selected) {
         btn.classList.add('wrong');
-        btn.textContent = `✗ ${text}`;
+        btn.textContent = `✗ ${q.options[originalIndex]}`;
       }
     } else {
-      btn.addEventListener('click', () => selectAnswer(i));
+      btn.addEventListener('click', () => selectAnswer(originalIndex));
     }
 
     el.options.appendChild(btn);
@@ -240,6 +251,7 @@ function startQuiz() {
   state.score = 0;
   state.selected = null;
   state.screen = 'quiz';
+  shuffleQuestionOrder()
   render();
 }
 
@@ -261,6 +273,7 @@ function nextQuestion() {
   } else {
     state.index++;
     state.selected = null;   // reset for the new question
+    shuffleQuestionOrder()
   }
   render();
 }
