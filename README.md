@@ -1,8 +1,12 @@
 # Medborgarskapsprovet — practice app (POC)
 
-A walking skeleton for a Swedish citizenship-test practice quiz.
-FastAPI backend, plain HTML/CSS/JavaScript frontend, questions in a JSON file.
-No build step, no database, no framework on the frontend.
+A practice quiz for the Swedish citizenship test (medborgarskapsprovet).
+FastAPI backend, plain HTML/CSS/JavaScript frontend, questions in a JSON file
+in this repo. No build step, no database, no frontend framework.
+
+Every served question cites the section and page of UHR's official study
+material it was written from, and is only served once a human has checked it
+against that page.
 
 **Live: <https://sweden-quiz.onrender.com>** — hosted on Render's free plan, so
 it sleeps after 15 minutes of inactivity; the first visit takes about a minute
@@ -55,8 +59,13 @@ Other useful URLs:
 .venv\Scripts\python.exe -m pytest -v
 ```
 
-Covers both the API and the *content* — every question is checked for an
-in-range answer, non-empty text and no duplicate options.
+Three files, covering different layers:
+
+| File | What it defends |
+|---|---|
+| `tests/test_models.py` | The rules themselves — what a valid question is. Loads no data, so it still runs when the content is broken. |
+| `tests/test_serving.py` | The gate between validated and visible: only verified questions are served. |
+| `tests/test_api.py` | The endpoints, and the content in `data/questions.json`. |
 
 ## Check it on your phone
 
@@ -83,9 +92,10 @@ Windows Firewall prompts on the first external connection: allow it on
 | `static/index.html` | Page skeleton. Three screens exist at once; JS shows one. |
 | `static/styles.css` | Mobile-first styling. Colours are CSS variables at the top. |
 | `static/app.js` | Frontend logic: **state → render → events**. Start reading here. |
-| `tests/test_api.py` | API and content tests. |
-| `PLAN.md` | Architecture, phases, open questions. |
-| `DEVLOG.md` | Build journal. |
+| `tests/` | Three test files — see **Test it** above. |
+| `render.yaml` | Deploy configuration, kept in git rather than in a dashboard. |
+| `.github/workflows/tests.yml` | Runs the tests on every pull request. |
+| `PLAN.md` | Architecture, phases, decisions and their reasoning. |
 
 Only `static/` is exposed to the web. Everything else — including `.git/` — stays
 private. That is the whole reason the frontend lives in its own folder.
@@ -122,18 +132,40 @@ app cannot warn you about — `verified` simply defaults to false and the
 question goes quietly missing from the quiz. Misspelling a key *is* caught:
 unknown fields are rejected at startup.
 
-Nothing in the code assumes four options, or any particular number of
-questions — both come from the data.
+Option order in the file does not matter: the frontend shuffles the options
+of every question on every run, so put the correct answer wherever is
+convenient. Nothing in the code assumes four options or any particular number
+of questions — both come from the data.
 
-The app validates all of this at startup and **refuses to boot** if anything is
-wrong: an out-of-range `correctIndex`, a duplicate `id`, a missing field, a
-trailing comma. The error names the offending question. Run `pytest` to check
-content without starting the server.
+Run `pytest` to check content without starting the server.
+
+## How changes land
+
+`main` is protected: no direct pushes, and no merge until the tests pass.
+
+```bash
+git checkout -b short-description
+```
+
+Commit, then push and open a pull request:
+
+```bash
+git push -u origin short-description
+```
+
+GitHub runs the test suite on the PR. Once it is green, squash and merge.
+Render deploys `main` automatically, so a merged pull request is live within a
+few minutes — and content that fails validation fails the deploy instead of
+reaching users.
 
 ## Not here yet
 
-No accounts, no database, no saved progress, no categories, no real exam
-content, no deployment. Each has a `TODO:` comment marking where it slots in:
+No accounts, no database, and no saved progress between visits — refreshing
+starts a new run. Questions are categorised by chapter but there is no way to
+filter by category yet, and there are only a small number of them.
+
+Planned work is in [PLAN.md](PLAN.md); the code marks where each piece slots
+in:
 
 ```bash
 git grep -n "TODO"
